@@ -18,7 +18,7 @@ namespace NetPCAPI.Controllers
             _context = context;
         }
 
-    
+
         //[HttpGet("test-database")]
         //public IActionResult TestDatabase()
         //{
@@ -29,6 +29,52 @@ namespace NetPCAPI.Controllers
         //    }
         //    return StatusCode(500, "Nie można połączyć się z bazą danych.");
         //}
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Contact>> GetContact(int id)
+        {
+            var contact = await _context.Contacts.FindAsync(id);
+            if (contact == null)
+            {
+                return NotFound("Nie znaleziono kontaktu");
+            }
+            return Ok(contact);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateContact(int id, [FromBody] Contact contact)
+        {
+            if (id != contact.Id)
+            {
+                return BadRequest("Identyfikator kontaktu nie pasuje.");
+            }
+
+            _context.Entry(contact).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, $"Błąd zapisu: {ex.InnerException?.Message}");
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteContact(int id)
+        {
+            var contact = await _context.Contacts.FindAsync(id);
+            if (contact == null)
+            {
+                return NotFound("Nie znaleziono kontaktu.");
+            }
+            _context.Contacts.Remove(contact);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
