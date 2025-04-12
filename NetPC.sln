@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPCAPI", "NetPCAPI\NetPCAPI.csproj", "{263DC0F8-B864-4E72-A173-B6A82FF5E323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPCUI", "NetPCUI\NetPCUI.csproj", "{4B492E35-7DBB-4CAD-A886-21F0B677954A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{263DC0F8-B864-4E72-A173-B6A82FF5E323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{263DC0F8-B864-4E72-A173-B6A82FF5E323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{263DC0F8-B864-4E72-A173-B6A82FF5E323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{263DC0F8-B864-4E72-A173-B6A82FF5E323}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B492E35-7DBB-4CAD-A886-21F0B677954A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B492E35-7DBB-4CAD-A886-21F0B677954A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B492E35-7DBB-4CAD-A886-21F0B677954A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B492E35-7DBB-4CAD-A886-21F0B677954A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {236A87F7-27D4-43C1-89B5-E651B10C9D55}
+	EndGlobalSection
+EndGlobal

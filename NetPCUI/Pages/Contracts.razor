@@ -1,0 +1,67 @@
+﻿@page "/contacts"
+@using System.Net.Http.Json
+@using System.Collections.Generic
+@inject HttpClient Http
+@using NetPCUI.Models
+
+<h3>Lista kontaktów</h3>
+
+@if (isLoading)
+{
+    <p>Ładowanie...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">Błąd: @errorMessage</p>
+}
+else if (contacts == null || contacts.Count == 0)
+{
+    <p>Brak kontaktów do wyświetlenia.</p>
+}
+else
+{
+    <ul>
+        @foreach (var contact in contacts)
+        {
+            <li>@contact.FirstName @contact.LastName - @contact.Email</li>
+        }
+    </ul>
+}
+
+<button @onclick="RefreshContacts">Odśwież listę</button>
+
+@code {
+    private List<Contact> contacts = new();
+    private bool isLoading = true;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadContacts();
+    }
+
+    private async Task LoadContacts()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            contacts = await Http.GetFromJsonAsync<List<Contact>>("api/Contacts") ?? new List<Contact>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Nie udało się pobrać danych z serwera.";
+            Console.WriteLine($"Błąd API: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshContacts()
+    {
+        await LoadContacts();
+    }
+}

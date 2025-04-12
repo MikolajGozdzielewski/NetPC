@@ -1,0 +1,26 @@
+﻿@page "/login"
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<h3>Logowanie</h3>
+
+<input type="email" placeholder="Email" @bind="email" />
+<input type="password" placeholder="Hasło" @bind="password" />
+<button @onclick="PerformLogin">Zaloguj</button>
+
+@code {
+    private string email;
+    private string password;
+
+    private async Task PerformLogin()
+    {
+        var loginData = new { Email = email, Password = password };
+        var response = await Http.PostAsJsonAsync("https://localhost:5000/api/auth/login", loginData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var token = await response.Content.ReadAsStringAsync();
+            // Zapisz token do LocalStorage lub SessionStorage
+        }
+    }
+}

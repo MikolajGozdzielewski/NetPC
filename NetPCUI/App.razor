@@ -1,0 +1,10 @@
+﻿@using NetPCUI.Layout
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <h3>Strona nie znaleziona!</h3>
+    </NotFound>
+</Router>
