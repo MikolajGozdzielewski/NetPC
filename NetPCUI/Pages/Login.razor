@@ -1,26 +1,56 @@
 ﻿@page "/login"
-@using System.Net.Http.Json
 @inject HttpClient Http
+@inject NavigationManager Navigation
 
 <h3>Logowanie</h3>
 
-<input type="email" placeholder="Email" @bind="email" />
-<input type="password" placeholder="Hasło" @bind="password" />
-<button @onclick="PerformLogin">Zaloguj</button>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+<form @onsubmit="HandleLogin">
+    <input @bind="email" placeholder="Email" />
+    <input type="password" @bind="password" placeholder="Hasło" />
+    <button type="submit">Zaloguj</button>
+</form>
 
 @code {
-    private string email;
-    private string password;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
 
-    private async Task PerformLogin()
+    private async Task HandleLogin()
     {
-        var loginData = new { Email = email, Password = password };
-        var response = await Http.PostAsJsonAsync("https://localhost:5000/api/auth/login", loginData);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var token = await response.Content.ReadAsStringAsync();
-            // Zapisz token do LocalStorage lub SessionStorage
+            // Wysyłanie żądania do API
+            var response = await Http.PostAsJsonAsync("api/auth/login", new { Email = email, Password = password });
+
+            // Sprawdzenie odpowiedzi
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Nie udało się zalogować. Sprawdź dane logowania.";
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                var token = result.Token;
+
+                Console.WriteLine($"Token JWT: {token}");
+
+                // Przekierowanie po zalogowaniu
+                Navigation.NavigateTo("/");
+            }
         }
+        catch (Exception ex)
+        {
+            errorMessage = $"Wystąpił błąd: {ex.Message}";
+        }
+    }
+
+    public class TokenResponse
+    {
+        public string Token { get; set; }
     }
 }
