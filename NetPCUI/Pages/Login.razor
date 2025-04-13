@@ -1,6 +1,7 @@
 ﻿@page "/login"
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h3>Logowanie</h3>
 
@@ -37,9 +38,10 @@
                 var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 var token = result.Token;
 
-                Console.WriteLine($"Token JWT: {token}");
+                // Zapisz token do localStorage i ustaw nagłówek
+                await JS.InvokeVoidAsync("localStorage.setItem", "jwtToken", token);
+                Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-                // Przekierowanie po zalogowaniu
                 Navigation.NavigateTo("/");
             }
         }

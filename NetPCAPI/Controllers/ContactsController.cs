@@ -80,7 +80,7 @@ namespace NetPCAPI.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Contact>> AddContact([FromBody] ContactDto contactDto)
         {
