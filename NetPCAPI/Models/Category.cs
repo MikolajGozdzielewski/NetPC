@@ -4,10 +4,12 @@ namespace NetPCAPI.Models
 {
     public class Category
     {
+        [Key]
         public int Id { get; set; }
-        //[Required]
+        [Required]
         public string Name { get; set; }
-        public ICollection<Subcategory> Subcategories { get; set; }
-        public ICollection<Contact> Contacts { get; set; }
+
+        public List<Contact> Contacts { get; set; }
+        public List<Subcategory> Subcategories { get; set; }
     }
 }

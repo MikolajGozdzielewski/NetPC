@@ -5,6 +5,7 @@ namespace NetPCAPI.Models
 {
     public class Contact
     {
+        [Key]
         public int Id { get; set; }
         [Required]
         public string FirstName { get; set; }
@@ -15,14 +16,13 @@ namespace NetPCAPI.Models
         [Required]
         public string Password { get; set; }
         [Phone]
-        public string PhoneNumber { get; set; }
-        public DateTime BirthDate { get; set; }
+        public string? PhoneNumber { get; set; }
+        public DateTime? BirthDate { get; set; }
         [Required]
-        public string Category { get; set; }
-        public string Subcategory { get; set; }
-        //public int CategoryId { get; set; }
-        //public Category Category { get; set; }
-        //public int? SubcategoryId { get; set; }
-        //public Subcategory Subcategory { get; set; }
+        public int CategoryId { get; set; }
+        public int? SubcategoryId { get; set; }
+        
+        public Category Category { get; set; }
+        public Subcategory? Subcategory { get; set; }
     }
 }

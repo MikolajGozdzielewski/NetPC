@@ -24,13 +24,23 @@
         [HttpPost("login")]
         public async Task<IActionResult> Login(ContactLoginDto request)
         {
-            var contact = _context.Contacts.FirstOrDefault(c => c.Email == request.Email && c.Password == request.Password);
+            var contact = _context.Contacts.FirstOrDefault(c => c.Email == request.Email);
+
             if (contact == null)
             {
-                return Unauthorized("Nieprawidłowy email lub hasło.");
+                Console.WriteLine($"Błąd: Użytkownik {request.Email} nie istnieje.");
+                return Unauthorized("Nieprawidłowy email.");
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, contact.Password))
+            {
+                Console.WriteLine($"Błąd: Niepoprawne hasło dla {request.Email}.");
+                return Unauthorized("Nieprawidłowe hasło.");
             }
 
             var token = GenerateJwtToken(contact);
+            Console.WriteLine($"Zalogowano: {request.Email}, Token: {token}");
+
             return Ok(new { Token = token });
         }
 

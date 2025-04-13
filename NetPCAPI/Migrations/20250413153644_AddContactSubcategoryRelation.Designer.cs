@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetPCAPI.Data;
 
@@ -10,9 +11,11 @@ using NetPCAPI.Data;
 namespace NetPCAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250413153644_AddContactSubcategoryRelation")]
+    partial class AddContactSubcategoryRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -29,7 +32,7 @@ namespace NetPCAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("NetPCAPI.Models.Contact", b =>
@@ -38,7 +41,7 @@ namespace NetPCAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("BirthDate")
+                    b.Property<DateTime>("BirthDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("CategoryId")
@@ -61,9 +64,10 @@ namespace NetPCAPI.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("SubcategoryId")
+                    b.Property<int>("SubcategoryId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -92,7 +96,7 @@ namespace NetPCAPI.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Subcategories");
+                    b.ToTable("Subcategory");
                 });
 
             modelBuilder.Entity("NetPCAPI.Models.Contact", b =>
@@ -106,7 +110,8 @@ namespace NetPCAPI.Migrations
                     b.HasOne("NetPCAPI.Models.Subcategory", "Subcategory")
                         .WithMany("Contacts")
                         .HasForeignKey("SubcategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
 
