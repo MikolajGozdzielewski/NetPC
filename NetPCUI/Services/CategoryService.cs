@@ -15,10 +15,10 @@ namespace NetPCUI.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<Category>> GetCategoriesAsync()
-        {
-            return await _httpClient.GetFromJsonAsync<List<Category>>("api/categories") ?? new List<Category>();
-        }
+        //public async Task<List<Category>> GetCategoriesAsync()
+        //{
+        //    return await _httpClient.GetFromJsonAsync<List<Category>>("api/categories") ?? new List<Category>();
+        //}
 
         public async Task<List<Subcategory>> GetSubcategoriesAsync(int categoryId)
         {

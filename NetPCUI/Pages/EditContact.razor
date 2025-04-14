@@ -22,12 +22,12 @@ else
     [Parameter]
     public int id { get; set; }
 
-    private Contact contact;
+    private ContactDto contact;
 
     protected override async Task OnInitializedAsync()
     {
         // Pobierz kontakt z serwera
-        contact = await Http.GetFromJsonAsync<Contact>($"api/contacts/{id}");
+        contact = await Http.GetFromJsonAsync<ContactDto>($"api/contacts/{id}");
     }
 
     private async Task HandleSubmit()

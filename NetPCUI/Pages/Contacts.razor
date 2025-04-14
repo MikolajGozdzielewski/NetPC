@@ -3,6 +3,11 @@
 @using System.Collections.Generic
 @inject HttpClient Http
 @using NetPCUI.Models
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject ContactService ContactService
+@inject IJSRuntime JSRuntime
+
 
 <h3>Lista kontaktów</h3>
 
@@ -31,6 +36,12 @@ else
                     <div class="contact-details">
                         <p>Email: @contact.Email</p>
                         <p>Telefon: @contact.PhoneNumber</p>
+
+                        @if (isLoggedIn)
+                        {
+                            <button @onclick:stopPropagation="true" @onclick="() => EditContact(contact.Id)">Edytuj</button>
+                            <button @onclick:stopPropagation="true" @onclick="() => DeleteContact(contact.Id)">Usuń</button>
+                        }
                     </div>
                 }
             </div>
@@ -41,14 +52,18 @@ else
 <button @onclick="RefreshContacts">Odśwież listę</button>
 
 @code {
-    private List<Contact> contacts = new();
-    private HashSet<Contact> expandedContacts = new();
+    private List<ContactDto> contacts = new();
+    private HashSet<ContactDto> expandedContacts = new();
     private bool isLoading = true;
     private string errorMessage;
+    private bool isLoggedIn;
+
+
 
     protected override async Task OnInitializedAsync()
     {
         await LoadContacts();
+        isLoggedIn = await AuthService.IsLoggedInAsync();
     }
 
     private async Task LoadContacts()
@@ -58,7 +73,7 @@ else
 
         try
         {
-            contacts = await Http.GetFromJsonAsync<List<Contact>>("api/Contacts") ?? new List<Contact>();
+            contacts = await Http.GetFromJsonAsync<List<ContactDto>>("api/Contacts") ?? new List<ContactDto>();
         }
         catch (Exception ex)
         {
@@ -71,7 +86,28 @@ else
         }
     }
 
-    private void ToggleDetails(Contact contact)
+    private void EditContact(int contactId)
+    {
+        NavigationManager.NavigateTo($"/edit-contact/{contactId}");
+    }
+
+    private async Task DeleteContact(int id)
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Czy na pewno chcesz usunąć kontakt?" });
+        if (!confirm) return;
+
+        bool success = await ContactService.DeleteContactAsync(id);
+        if (success)
+        {
+            contacts.RemoveAll(c => c.Id == id); // odświeżenie widoku
+        }
+        else
+        {
+            Console.WriteLine("Błąd podczas usuwania kontaktu.");
+        }
+    }
+
+    private void ToggleDetails(ContactDto contact)
     {
         if (expandedContacts.Contains(contact))
         {

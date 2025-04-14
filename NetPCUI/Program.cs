@@ -13,7 +13,6 @@ builder.RootComponents.Add<App>("#app");
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ContactService>();
-builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<AuthService>();
 
 

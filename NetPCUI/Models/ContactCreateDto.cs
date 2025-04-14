@@ -1,6 +1,6 @@
 ﻿namespace NetPCUI.Models
 {
-    public class CategoryDto
+    public class ContactCreateDto
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
