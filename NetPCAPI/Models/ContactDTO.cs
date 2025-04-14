@@ -12,6 +12,5 @@
         public string? CategoryName { get; set; }
         public int? SubcategoryId { get; set; }
         public string? SubcategoryName { get; set; }
-        public string Password { get; set; }
     }
 }

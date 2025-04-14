@@ -1,0 +1,38 @@
+﻿@page "/edit-contact/{id}"
+@using NetPCUI.Models
+
+<PageTitle>Edytuj Kontakt</PageTitle>
+
+@inject HttpClient Http
+
+<h3>Edytowanie kontaktu</h3>
+
+@if (contact == null)
+{
+    <p>Ładowanie...</p>
+}
+else
+{
+    <EditForm Model="@contact" OnValidSubmit="HandleSubmit">
+        <!-- Formularz edycji kontaktu -->
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Contact contact;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Pobierz kontakt z serwera
+        contact = await Http.GetFromJsonAsync<Contact>($"api/contacts/{id}");
+    }
+
+    private async Task HandleSubmit()
+    {
+        // Zapisz edytowany kontakt
+        await Http.PutAsJsonAsync($"api/contacts/{id}", contact);
+    }
+}

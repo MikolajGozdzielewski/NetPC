@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	  <ScopedCssEnabled>true</ScopedCssEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +17,7 @@
 	<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="6.5.2" />
     <PackageReference Include="System.Net.Http.Json" Version="9.0.4" />
-  </ItemGroup>
+	</ItemGroup>
 
 </Project>
 

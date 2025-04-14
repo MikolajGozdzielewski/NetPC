@@ -6,15 +6,32 @@
 <h3>Dodaj kontakt</h3>
 
 <EditForm Model="@newContact" OnValidSubmit="HandleSubmit">
-    <InputText @bind-Value="newContact.FirstName" placeholder="Imię" />
-    <InputText @bind-Value="newContact.LastName" placeholder="Nazwisko" />
-    <InputText @bind-Value="newContact.Email" placeholder="Email" />
-    <InputText @bind-Value="newContact.Password" type="password" placeholder="Hasło" />
-    <InputText @bind-Value="newContact.PhoneNumber" placeholder="Telefon" />
-    <InputDate @bind-Value="newContact.BirthDate" />
-    <InputNumber @bind-Value="newContact.CategoryId" />
-    <button type="submit">Dodaj</button>
+    <div style="display: flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
+        <label>Imię:</label>
+        <InputText @bind-Value="newContact.FirstName" />
+
+        <label>Nazwisko:</label>
+        <InputText @bind-Value="newContact.LastName" />
+
+        <label>Email:</label>
+        <InputText @bind-Value="newContact.Email" />
+
+        <label>Hasło:</label>
+        <InputText @bind-Value="newContact.Password" type="password" />
+
+        <label>Telefon:</label>
+        <InputText @bind-Value="newContact.PhoneNumber" />
+
+        <label>Data urodzenia:</label>
+        <InputDate @bind-Value="newContact.BirthDate" />
+
+        <label>ID kategorii:</label>
+        <InputNumber @bind-Value="newContact.CategoryId" />
+
+        <button type="submit">Dodaj</button>
+    </div>
 </EditForm>
+
 
 @if (!string.IsNullOrEmpty(message))
 {

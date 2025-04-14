@@ -1,10 +1,18 @@
 ﻿@using Microsoft.AspNetCore.Components
 
+@code {
+    [Parameter] public bool IsLoggedIn { get; set; }
+    [Parameter] public EventCallback OnLogout { get; set; }
+}
+
 <nav>
     <ul>
         <li><a href="/">Strona główna</a></li>
         <li><a href="/contacts">Kontakty</a></li>
         <li><a href="/login">Logowanie</a></li>
-        <li><a href="/add-contact">Dodaj</a></li>
+        @if (IsLoggedIn)
+        {
+            <li><a href="/add-contact">Dodaj</a></li>
+        }
     </ul>
 </nav>

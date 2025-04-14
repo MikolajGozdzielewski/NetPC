@@ -1,6 +1,6 @@
 ﻿@page "/login"
 @inject HttpClient Http
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
 <h3>Logowanie</h3>
@@ -42,7 +42,9 @@
                 await JS.InvokeVoidAsync("localStorage.setItem", "jwtToken", token);
                 Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-                Navigation.NavigateTo("/");
+                //Navigation.NavigateTo("/");
+                NavigationManager.NavigateTo("/",true);
+
             }
         }
         catch (Exception ex)

@@ -20,18 +20,29 @@ else if (contacts == null || contacts.Count == 0)
 }
 else
 {
-    <ul>
+    <div class="contact-list">
         @foreach (var contact in contacts)
         {
-            <li>@contact.FirstName @contact.LastName - @contact.Email</li>
+            <div class="contact-item" @onclick="() => ToggleDetails(contact)">
+                <strong>@contact.FirstName @contact.LastName</strong>
+
+                @if (expandedContacts.Contains(contact))
+                {
+                    <div class="contact-details">
+                        <p>Email: @contact.Email</p>
+                        <p>Telefon: @contact.PhoneNumber</p>
+                    </div>
+                }
+            </div>
         }
-    </ul>
+    </div>
 }
 
 <button @onclick="RefreshContacts">Odśwież listę</button>
 
 @code {
     private List<Contact> contacts = new();
+    private HashSet<Contact> expandedContacts = new();
     private bool isLoading = true;
     private string errorMessage;
 
@@ -60,8 +71,40 @@ else
         }
     }
 
+    private void ToggleDetails(Contact contact)
+    {
+        if (expandedContacts.Contains(contact))
+        {
+            expandedContacts.Remove(contact);
+        }
+        else
+        {
+            expandedContacts.Add(contact);
+        }
+    }
+
     private async Task RefreshContacts()
     {
         await LoadContacts();
     }
 }
+
+<style>
+    .contact-item {
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+        .contact-item:hover {
+            background-color: #e0e0e0;
+        }
+
+    .contact-details {
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+    }
+</style>

@@ -1,13 +1,35 @@
 ﻿@using Microsoft.AspNetCore.Components
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
 @inherits LayoutComponentBase
+
+<StatusBar IsLoggedIn="isLoggedIn" OnLogout="HandleLogout" />
+
 
 <div class="container">
     <header>
         <h1>ContactApp</h1>
-        <NavMenu />
+        <NavMenu IsLoggedIn="isLoggedIn" OnLogout="HandleLogout" />
     </header>
     <main>
         @Body
     </main>
 </div>
+
+
+@code {
+    private bool isLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoggedIn = await AuthService.IsLoggedInAsync();
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        isLoggedIn = false;
+        NavigationManager.NavigateTo("/", true); 
+    }
+}

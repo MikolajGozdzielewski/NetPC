@@ -1,0 +1,16 @@
+﻿@code {
+    [Parameter] public bool IsLoggedIn { get; set; }
+    [Parameter] public EventCallback OnLogout { get; set; }
+}
+
+<div class="status-bar">
+    @if (IsLoggedIn)
+    {
+        <span>✅ Zalogowany</span>
+        <button @onclick="OnLogout">Wyloguj się</button>
+    }
+    else
+    {
+        <span>🔒 Niezalogowany</span>
+    }
+</div>

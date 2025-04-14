@@ -82,7 +82,7 @@ namespace NetPCAPI.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Contact>> AddContact([FromBody] ContactDto contactDto)
+        public async Task<ActionResult<Contact>> AddContact([FromBody] ContactCreateDto contactCreateDto)
         {
             // Sprawdzenie poprawności modelu
             if (!ModelState.IsValid)
@@ -91,22 +91,22 @@ namespace NetPCAPI.Controllers
             }
 
             // Sprawdzenie unikalności emaila
-            if (_context.Contacts.Any(c => c.Email == contactDto.Email))
+            if (_context.Contacts.Any(c => c.Email == contactCreateDto.Email))
             {
                 return BadRequest("Podany adres email jest już zarejestrowany.");
             }
 
             // Pobranie nazwy kategorii i podkategorii z bazy danych (jeśli są wymagane)
-            var category = await _context.Categories.FindAsync(contactDto.CategoryId);
+            var category = await _context.Categories.FindAsync(contactCreateDto.CategoryId);
             if (category == null)
             {
                 return BadRequest("Nie znaleziono podanej kategorii.");
             }
 
             string subcategoryName = null;
-            if (contactDto.SubcategoryId > 0)
+            if (contactCreateDto.SubcategoryId > 0)
             {
-                var subcategory = await _context.Subcategories.FindAsync(contactDto.SubcategoryId);
+                var subcategory = await _context.Subcategories.FindAsync(contactCreateDto.SubcategoryId);
                 if (subcategory == null)
                 {
                     return BadRequest("Nie znaleziono podanej podkategorii.");
@@ -117,16 +117,16 @@ namespace NetPCAPI.Controllers
             // Utworzenie nowego obiektu kontaktu
             var contact = new Contact
             {
-                FirstName = contactDto.FirstName,
-                LastName = contactDto.LastName,
-                Email = contactDto.Email,
-                PhoneNumber = contactDto.PhoneNumber,
-                BirthDate = contactDto.BirthDate,
-                CategoryId = contactDto.CategoryId,
-                SubcategoryId = contactDto.SubcategoryId,
-                Password = BCrypt.Net.BCrypt.HashPassword(contactDto.Password), // Haszowanie hasła
+                FirstName = contactCreateDto.FirstName,
+                LastName = contactCreateDto.LastName,
+                Email = contactCreateDto.Email,
+                PhoneNumber = contactCreateDto.PhoneNumber,
+                BirthDate = contactCreateDto.BirthDate,
+                CategoryId = contactCreateDto.CategoryId,
+                SubcategoryId = contactCreateDto.SubcategoryId,
+                Password = BCrypt.Net.BCrypt.HashPassword(contactCreateDto.Password), // Haszowanie hasła
                 Category = category,
-                Subcategory = subcategoryName != null ? await _context.Subcategories.FindAsync(contactDto.SubcategoryId) : null
+                Subcategory = subcategoryName != null ? await _context.Subcategories.FindAsync(contactCreateDto.SubcategoryId) : null
             };
 
             // Dodanie kontaktu do bazy danych
@@ -159,21 +159,64 @@ namespace NetPCAPI.Controllers
 
         //[Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateContact(int id, [FromBody] ContactDto contactDto)
+        public async Task<IActionResult> UpdateContact(int id, [FromBody] ContactUpdateDto contactUpdateDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var contact = await _context.Contacts.FindAsync(id);
             if (contact == null)
             {
                 return NotFound("Nie znaleziono kontaktu.");
             }
 
-            contact.FirstName = contactDto.FirstName;
-            contact.LastName = contactDto.LastName;
-            contact.Email = contactDto.Email;
-            contact.PhoneNumber = contactDto.PhoneNumber;
-            contact.BirthDate = contactDto.BirthDate;
-            contact.CategoryId = contactDto.CategoryId;
-            contact.SubcategoryId = contactDto.SubcategoryId;
+            if (_context.Contacts.Any(c => c.Email == contactUpdateDto.Email && c.Id != id))
+            {
+                return BadRequest("Podany adres email jest już zarejestrowany.");
+            }
+
+            if (!string.IsNullOrEmpty(contactUpdateDto.FirstName))
+                contact.FirstName = contactUpdateDto.FirstName;
+
+            if (!string.IsNullOrEmpty(contactUpdateDto.LastName))
+                contact.LastName = contactUpdateDto.LastName;
+
+            if (!string.IsNullOrEmpty(contactUpdateDto.Email))
+                contact.Email = contactUpdateDto.Email;
+
+            if (!string.IsNullOrEmpty(contactUpdateDto.PhoneNumber))
+                contact.PhoneNumber = contactUpdateDto.PhoneNumber;
+
+            if (contactUpdateDto.BirthDate.HasValue)
+                contact.BirthDate = contactUpdateDto.BirthDate;
+
+            if (contactUpdateDto.CategoryId.HasValue)
+            {
+                var category = await _context.Categories.FindAsync(contactUpdateDto.CategoryId);
+                if (category == null)
+                {
+                    return BadRequest("Nie znaleziono podanej kategorii.");
+                } else
+                {
+                    contact.CategoryId = contactUpdateDto.CategoryId.Value;
+                    contact.Category = category;
+                }
+            }
+
+            if (contactUpdateDto.SubcategoryId.HasValue)
+            {
+                var subcategory = await _context.Subcategories.FindAsync(contactUpdateDto.SubcategoryId.Value);
+                if (subcategory == null)
+                {
+                    return BadRequest("Nie znaleziono podanej podkategorii.");
+                } else
+                {
+                    contact.SubcategoryId = contactUpdateDto.SubcategoryId.Value;
+                    contact.Subcategory = subcategory;
+                }
+            }
 
             _context.Entry(contact).State = EntityState.Modified;
 
