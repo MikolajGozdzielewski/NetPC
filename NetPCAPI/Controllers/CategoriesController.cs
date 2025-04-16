@@ -2,8 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetPCAPI.Data;
 using NetPCAPI.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace NetPCAPI.Controllers
 {
