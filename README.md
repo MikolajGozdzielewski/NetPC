@@ -1,5 +1,18 @@
-Rozwiązanie należy otworzyć w VisualStudio2022, a następnie odpalić projekt NetPCAPI oraz NetPCUI.
-Alternatywnie po pobraniu repozytorium można otworzyć 2 terminale, w pierwszym otworzyć projekt NetPCAPI, w drugim NetPCUI i oba uruchomić instrukcją:
-dotnet run
-Strona pod adresem:
+Sposób Budowy Aplikacji:
+Opcja 1:
+- Pobierz repozytorium na swój komputer.
+- Otwórz rozwiązanie .sln w Visual Studio 2022
+- W Solution Explorer znajdź projekt NetPCAPI
+- Upewnij się, że jest ustawiony jako projekt startowy i kliknij Run
+- W Solution Explorer znajdź projekt NetPCUI
+- Upewnij się, że jest ustawiony jako projekt startowy i kliknij Run
+- Po uruchomieniu obu projektów, aplikacja powinna być dostępna pod adresem:
+https://localhost:6001/
+Opcja 2:
+- Pobierz repozytorium na swój komputer.
+- Otwórz terminal w katalogu NetPCAPI
+- Uruchom projekt poleceniem „dotnet run”
+- Otwórz terminal w katalogu NetPCUI
+- Uruchom projekt poleceniem „dotnet run”
+- Po uruchomieniu obu projektów, aplikacja powinna być dostępna pod adresem:
 https://localhost:6001/
