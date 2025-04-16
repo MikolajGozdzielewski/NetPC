@@ -1,4 +1,4 @@
-Sposób Budowy Aplikacji:
+Sposób Budowy Aplikacji:<br/>
 Opcja 1:
 - Pobierz repozytorium na swój komputer.
 - Otwórz rozwiązanie .sln w Visual Studio 2022
@@ -7,7 +7,7 @@ Opcja 1:
 - W Solution Explorer znajdź projekt NetPCUI
 - Upewnij się, że jest ustawiony jako projekt startowy i kliknij Run
 - Po uruchomieniu obu projektów, aplikacja powinna być dostępna pod adresem:
-https://localhost:6001/
+https://localhost:6001/ <br/>
 Opcja 2:
 - Pobierz repozytorium na swój komputer.
 - Otwórz terminal w katalogu NetPCAPI
