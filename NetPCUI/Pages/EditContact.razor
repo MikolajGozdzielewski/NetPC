@@ -1,9 +1,12 @@
-﻿@page "/edit-contact/{id}"
+﻿@page "/edit-contact/{id:int}"
+@inject HttpClient Http
 @using NetPCUI.Models
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject ContactService ContactService
+@inject CategoryService CategoryService
 
 <PageTitle>Edytuj Kontakt</PageTitle>
-
-@inject HttpClient Http
 
 <h3>Edytowanie kontaktu</h3>
 
@@ -11,28 +14,210 @@
 {
     <p>Ładowanie...</p>
 }
-else
-{
+else{
     <EditForm Model="@contact" OnValidSubmit="HandleSubmit">
-        <!-- Formularz edycji kontaktu -->
+        <DataAnnotationsValidator /> <!-- Walidacja na podstawie atrybutów modelu -->
+        <ValidationSummary /> <!-- Podsumowanie błędów walidacji -->
+
+        <div style="display: flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
+            <label>Imię:</label>
+            <InputText @bind-Value="contact.FirstName" />
+
+            <label>Nazwisko:</label>
+            <InputText @bind-Value="contact.LastName" />
+
+            <label>Email:</label>
+            <InputText @bind-Value="contact.Email" />
+
+            <label>Telefon:</label>
+            <InputText @bind-Value="contact.PhoneNumber" />
+
+            <label>Data urodzenia:</label>
+            <InputDate @bind-Value="contact.BirthDate" />
+
+            <label>Kategoria</label>
+            <select @bind="CategoryId" @bind:event="onchange">
+                <option value="">-- Wybierz kategorię --</option>
+                @foreach (var category in categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+
+            @if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "służbowy")
+            {
+                <label>Subkategoria:</label>
+                <InputSelect @bind-Value="contact.SubcategoryId">
+                    <option value="">-- Wybierz subkategorię --</option>
+                    @foreach (var sub in subcategories)
+                    {
+                        <option value="@sub.Id">@sub.Name</option>
+                    }
+                </InputSelect>
+            }
+            else if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "inny")
+            {
+                <label>Inna subkategoria:</label>
+                <InputText @bind-Value="contact.AnotherSubcategory" />
+            }
+
+            <button type="submit">Zaktualizuj</button>
+        </div>
     </EditForm>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <p class="text-danger">@message</p>
+    }
+
+    @if (validationErrors != null && validationErrors.Any())
+    {
+        <div class="text-danger">
+            @foreach (var error in validationErrors)
+            {
+                <p>@error.Key: @string.Join(", ", error.Value)</p>
+            }
+        </div>
+    }
 }
 
 @code {
     [Parameter]
     public int id { get; set; }
 
-    private ContactDto contact;
+    private ContactUpdateDto contact = new();
+    private List<CategoryDto> categories = new();
+    private List<SubcategoryDto> subcategories = new();
+    private string selectedCategoryName = "";
+    private string message = "";
+    private int selectedCategoryId;
+    private Dictionary<string, List<string>> validationErrors;
+    private int _categoryId;
+    private int CategoryId
+    {
+        get => contact.CategoryId;
+        set
+        {
+            if (contact.CategoryId != value)
+            {
+                contact.CategoryId = value;
+                _ = OnCategoryChanged(value);
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Pobierz kontakt z serwera
-        contact = await Http.GetFromJsonAsync<ContactDto>($"api/contacts/{id}");
+        categories = await CategoryService.GetCategoriesAsync();
+        try
+        {
+            Console.WriteLine("OnInitializedAsync wywołane");
+
+            // Sprawdzamy, czy id jest poprawne
+            Console.WriteLine($"Id kontaktu: {id}");
+
+            // Pobierz kontakt z serwera
+            var oldContact = await ContactService.GetContactByIdAsync(id);
+
+            if (oldContact == null)
+            {
+                Console.WriteLine("Kontakt nie został znaleziony.");
+                Navigation.NavigateTo("/not-found");
+            }
+            else
+            {
+                contact = new ContactUpdateDto
+                    {
+                        Id = id,
+                        FirstName = oldContact.FirstName,
+                        LastName = oldContact.LastName,
+                        Email = oldContact.Email,
+                        PhoneNumber = oldContact.PhoneNumber,
+                        BirthDate = oldContact.BirthDate,
+                        CategoryId = oldContact.CategoryId,
+                        SubcategoryId = oldContact.SubcategoryId,
+                        AnotherSubcategory = oldContact.AnotherSubcategory
+                    };
+            }
+            selectedCategoryId = oldContact.CategoryId;
+            var selectedCategory = categories.FirstOrDefault(c => c.Id == contact.CategoryId);
+            if (selectedCategory != null)
+            {
+                selectedCategoryName = selectedCategory.Name;
+                Console.WriteLine($"Wczytana kategoria: {selectedCategoryName}");
+
+                // Jeśli kategoria to "służbowy", ładujemy subkategorie
+                if (selectedCategoryName == "służbowy")
+                {
+                    subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(contact.CategoryId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Wystąpił błąd: {ex.Message}");
+        }
     }
 
     private async Task HandleSubmit()
     {
-        // Zapisz edytowany kontakt
-        await Http.PutAsJsonAsync($"api/contacts/{id}", contact);
+        try
+        {
+            // Pobierz token
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwtToken");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                message = "Brak tokenu. Zaloguj się.";
+                return;
+            }
+
+            var response = await ContactService.UpdateContactAsync(contact, token);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Zaktualizowano kontakt!";
+                Navigation.NavigateTo("/contacts");
+            }
+            else
+            {
+                validationErrors = await response.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>();
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Błąd: {ex.Message}";
+        }
+    }
+    private async Task OnCategoryChanged(int selectedCategoryId)
+    {
+        // Zmieniamy kategorię na podstawie wartości wybranej przez użytkownika
+        var selectedCategory = categories.FirstOrDefault(c => c.Id == selectedCategoryId);
+
+        // Jeśli kategoria została wybrana, przypisz jej nazwę
+        if (selectedCategory != null)
+        {
+            selectedCategoryName = selectedCategory.Name;
+            Console.WriteLine($"Wybrana kategoria: {selectedCategoryName}");
+        }
+
+        // Ustawiamy nową kategorię w modelu
+        contact.CategoryId = selectedCategoryId;
+
+        // Jeśli kategoria to "służbowy", załaduj subkategorie
+        if (selectedCategoryName == "służbowy")
+        {
+            subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(selectedCategoryId);
+            contact.SubcategoryId = null;
+            contact.AnotherSubcategory = null;
+        }
+        else
+        {
+            contact.SubcategoryId = null;
+            contact.AnotherSubcategory = null;
+        }
+
+        // Zaktualizowanie komponentu po zmianie kategorii
+        StateHasChanged();
     }
 }

@@ -2,8 +2,9 @@
 
 namespace NetPCUI.Models
 {
-    public class ContactCreateDto
+    public class ContactUpdateDto
     {
+        public int Id { get; set; }
         [Required(ErrorMessage = "Imię jest wymagane")]
         public string FirstName { get; set; }
 
@@ -13,10 +14,6 @@ namespace NetPCUI.Models
         [Required(ErrorMessage = "Email jest wymagany")]
         [EmailAddress(ErrorMessage = "Podaj poprawny adres email")]
         public string Email { get; set; }
-
-        [Required(ErrorMessage = "Hasło jest wymagane")]
-        [StringLength(100, MinimumLength = 8, ErrorMessage = "Hasło musi mieć co najmniej 8 znaków")]
-        public string Password { get; set; }
 
         [Required(ErrorMessage = "Numer telefonu jest wymagany")]
         [Phone(ErrorMessage = "Podaj poprawny numer telefonu")]

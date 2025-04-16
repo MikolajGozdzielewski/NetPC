@@ -7,6 +7,7 @@
 @inject AuthService AuthService
 @inject ContactService ContactService
 @inject IJSRuntime JSRuntime
+@inject IJSRuntime JS
 
 
 <h3>Lista kontaktów</h3>
@@ -36,7 +37,17 @@ else
                     <div class="contact-details">
                         <p>Email: @contact.Email</p>
                         <p>Telefon: @contact.PhoneNumber</p>
+                        <p>Data urodzenia: @contact.BirthDate</p>
+                        <p>Kategoria: @contact.CategoryName</p>
+                        @if (!string.IsNullOrEmpty(contact.SubcategoryName))
+                        {
+                            <p>Podkategoria: @contact.SubcategoryName</p>
+                        }
 
+                        @if (!string.IsNullOrEmpty(contact.AnotherSubcategory))
+                        {
+                            <p>Podkategoria: @contact.AnotherSubcategory</p>
+                        }
                         @if (isLoggedIn)
                         {
                             <button @onclick:stopPropagation="true" @onclick="() => EditContact(contact.Id)">Edytuj</button>
@@ -96,7 +107,14 @@ else
         var confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Czy na pewno chcesz usunąć kontakt?" });
         if (!confirm) return;
 
-        bool success = await ContactService.DeleteContactAsync(id);
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwtToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            return;
+        }
+
+        bool success = await ContactService.DeleteContactAsync(id,token);
         if (success)
         {
             contacts.RemoveAll(c => c.Id == id); // odświeżenie widoku

@@ -23,13 +23,24 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AuthService.OnAuthStateChanged += AuthChanged;
         isLoggedIn = await AuthService.IsLoggedInAsync();
+    }
+
+    private async void AuthChanged()
+    {
+        isLoggedIn = await AuthService.IsLoggedInAsync();
+        StateHasChanged(); // 🔄 odświeża layout po zmianie
     }
 
     private async Task HandleLogout()
     {
         await AuthService.LogoutAsync();
-        isLoggedIn = false;
-        NavigationManager.NavigateTo("/", true); 
+        NavigationManager.NavigateTo("/"); 
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= AuthChanged;
     }
 }

@@ -42,7 +42,8 @@ namespace NetPCAPI.Controllers
                 CategoryId = contact.CategoryId,
                 CategoryName = contact.Category.Name,
                 SubcategoryId = contact.SubcategoryId,
-                SubcategoryName = contact.Subcategory?.Name
+                SubcategoryName = contact.Subcategory?.Name,
+                AnotherSubcategory = contact.AnotherSubcategory
             };
             return Ok(contactDto);
         }
@@ -67,7 +68,8 @@ namespace NetPCAPI.Controllers
                         CategoryId = c.CategoryId,
                         CategoryName = c.Category.Name,
                         SubcategoryId = c.SubcategoryId,
-                        SubcategoryName = c.Subcategory.Name
+                        SubcategoryName = c.Subcategory.Name,
+                        AnotherSubcategory = c.AnotherSubcategory
                     })
                     .ToListAsync();
 
@@ -124,6 +126,7 @@ namespace NetPCAPI.Controllers
                 BirthDate = contactCreateDto.BirthDate,
                 CategoryId = contactCreateDto.CategoryId,
                 SubcategoryId = contactCreateDto.SubcategoryId,
+                AnotherSubcategory = contactCreateDto.AnotherSubcategory,
                 Password = BCrypt.Net.BCrypt.HashPassword(contactCreateDto.Password), // Haszowanie hasła
                 Category = category,
                 Subcategory = subcategoryName != null ? await _context.Subcategories.FindAsync(contactCreateDto.SubcategoryId) : null
@@ -157,7 +160,7 @@ namespace NetPCAPI.Controllers
             });
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateContact(int id, [FromBody] ContactUpdateDto contactUpdateDto)
         {
@@ -174,7 +177,7 @@ namespace NetPCAPI.Controllers
 
             if (_context.Contacts.Any(c => c.Email == contactUpdateDto.Email && c.Id != id))
             {
-                return BadRequest("Podany adres email jest już zarejestrowany.");
+                return BadRequest(new { Email = new[] { "Podany adres email jest już zarejestrowany." } });
             }
 
             if (!string.IsNullOrEmpty(contactUpdateDto.FirstName))
@@ -188,6 +191,9 @@ namespace NetPCAPI.Controllers
 
             if (!string.IsNullOrEmpty(contactUpdateDto.PhoneNumber))
                 contact.PhoneNumber = contactUpdateDto.PhoneNumber;
+
+            if (!string.IsNullOrEmpty(contactUpdateDto.AnotherSubcategory))
+                contact.AnotherSubcategory = contactUpdateDto.AnotherSubcategory;
 
             if (contactUpdateDto.BirthDate.HasValue)
                 contact.BirthDate = contactUpdateDto.BirthDate;
@@ -232,7 +238,7 @@ namespace NetPCAPI.Controllers
             return NoContent();
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContact(int id)
         {

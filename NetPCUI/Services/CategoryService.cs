@@ -1,28 +1,41 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
-using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using NetPCUI.Models;
 
-namespace NetPCUI.Services
-{
+//namespace NetPCUI.Services
+//{
     public class CategoryService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _http;
 
-        public CategoryService(HttpClient httpClient)
+        public CategoryService(HttpClient http)
         {
-            _httpClient = httpClient;
+            _http = http;
         }
 
-        //public async Task<List<Category>> GetCategoriesAsync()
-        //{
-        //    return await _httpClient.GetFromJsonAsync<List<Category>>("api/categories") ?? new List<Category>();
-        //}
-
-        public async Task<List<Subcategory>> GetSubcategoriesAsync(int categoryId)
+        public async Task<List<CategoryDto>> GetCategoriesAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<Subcategory>>($"api/categories/{categoryId}/subcategories") ?? new List<Subcategory>();
+            var response = await _http.GetAsync("api/categories");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<CategoryDto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            }
+            return new();
+        }
+
+        public async Task<List<SubcategoryDto>> GetSubcategoriesByCategoryIdAsync(int categoryId)
+        {
+            var response = await _http.GetAsync($"api/categories/{categoryId}/subcategories");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<SubcategoryDto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            }
+            return new();
         }
     }
-}
+//}

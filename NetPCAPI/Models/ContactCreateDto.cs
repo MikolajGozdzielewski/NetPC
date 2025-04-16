@@ -28,5 +28,6 @@ namespace NetPCAPI.Models
         public int CategoryId { get; set; }
 
         public int? SubcategoryId { get; set; }
+        public string? AnotherSubcategory { get; set; }
     }
 }

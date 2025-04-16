@@ -32,10 +32,11 @@ public class ContactService
         }
     }
 
-    public async Task<bool> DeleteContactAsync(int id)
+    public async Task<bool> DeleteContactAsync(int id, string token)
     {
         try
         {
+            _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             var response = await _http.DeleteAsync($"api/Contacts/{id}");
             if (response.IsSuccessStatusCode)
             {
@@ -54,29 +55,56 @@ public class ContactService
         }
     }
 
-    public async Task UpdateContactAsync(ContactDto contact)
+    public async Task<HttpResponseMessage> UpdateContactAsync(ContactUpdateDto contact, string token)
     {
-        var response = await _http.PutAsJsonAsync($"api/contacts/{contact.Id}", contact);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            throw new Exception("Nie udało się zaktualizować kontaktu.");
+            _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var response = await _http.PutAsJsonAsync($"api/Contacts/{contact.Id}", contact);
+            if (response.IsSuccessStatusCode)
+            {
+                return response;
+            }
+            else
+            {
+                Console.WriteLine($"Nie udało się zaktualizować kontaktu. Status: {response.StatusCode}");
+                return response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy aktualizacji kontaktu: {ex.Message}");
+            return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
         }
     }
 
-    public async Task<bool> AddContactAsync(ContactCreateDto newContact, string token)
+    public async Task<(bool success, string errorMsg, Dictionary<string, List<string>> validationErrors)> AddContactAsync(ContactCreateDto newContact, string token)
     {
         try
         {
             _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             var response = await _http.PostAsJsonAsync("api/Contacts", newContact);
 
-            return response.IsSuccessStatusCode;
+            if (!response.IsSuccessStatusCode)
+            {
+                // Zwracamy błędy walidacji w postaci słownika
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    var validationResponse = await response.Content.ReadFromJsonAsync<ValidationErrorResponse>();
+                    return (false, null, validationResponse?.Errors);
+                }
+                else
+                {
+                    return (false, "Nie udało się dodać kontaktu.", null);
+                }
+            }
+
+            return (true, null, null);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Błąd przy dodawaniu kontaktu: {ex.Message}");
-            return false;
+            return (false, "Wystąpił błąd przy dodawaniu kontaktu.", null);
         }
     }
 }

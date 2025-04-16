@@ -4,10 +4,14 @@
 @inject IJSRuntime JS
 @using NetPCUI.Models
 @inject ContactService ContactService
+@inject CategoryService CategoryService
 
 <h3>Dodaj kontakt</h3>
 
 <EditForm Model="@newContact" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator /> <!-- Walidacja na podstawie atrybutów modelu -->
+    <ValidationSummary /> <!-- Podsumowanie błędów walidacji -->
+
     <div style="display: flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
         <label>Imię:</label>
         <InputText @bind-Value="newContact.FirstName" />
@@ -27,22 +31,53 @@
         <label>Data urodzenia:</label>
         <InputDate @bind-Value="newContact.BirthDate" />
 
-        <label>ID kategorii:</label>
-        <InputNumber @bind-Value="newContact.CategoryId" />
+        <label>Kategoria</label>
+        <select value="newContact.CategoryId" @onchange="OnCategoryChanged">
+            <option value="">-- Wybierz kategorię --</option>
+            @foreach (var category in categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+
+        @if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "służbowy")
+        {
+            <label>Subkategoria:</label>
+            <InputSelect @bind-Value="newContact.SubcategoryId">
+                <option value="">-- Wybierz subkategorię --</option>
+                @foreach (var sub in subcategories)
+                {
+                    <option value="@sub.Id">@sub.Name</option>
+                }
+            </InputSelect>
+        }
+        else if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "inny")
+        {
+            <label>Inna subkategoria:</label>
+            <InputText @bind-Value="newContact.AnotherSubcategory" />
+        }
 
         <button type="submit">Dodaj</button>
     </div>
 </EditForm>
 
-
 @if (!string.IsNullOrEmpty(message))
 {
-    <p>@message</p>
+    <p class="text-danger">@message</p>
 }
 
 @code {
     private ContactCreateDto newContact = new();
+    private List<CategoryDto> categories = new();
+    private List<SubcategoryDto> subcategories = new();
+    private string selectedCategoryName = "";
     private string message = "";
+    private int selectedCategoryId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetCategoriesAsync();
+    }
 
     private async Task HandleSubmit()
     {
@@ -57,21 +92,64 @@
                 return;
             }
 
-            var success = await ContactService.AddContactAsync(newContact, token);
+            var (success, errorMsg, validationErrors) = await ContactService.AddContactAsync(newContact, token);
 
             if (success)
             {
-                message = "Dodano kontakt!";
                 Navigation.NavigateTo("/");
             }
             else
             {
-                message = "Nie udało się dodać kontaktu.";
+                if (validationErrors != null && validationErrors.Any())
+                {
+                    // Obsługuje błędy walidacji, które są zwracane przez serwer
+                    foreach (var error in validationErrors)
+                    {
+                        message += $"{error.Key}: {string.Join(", ", error.Value)}\n";
+                    }
+                }
+                else
+                {
+                    message = errorMsg ?? "Nie udało się dodać kontaktu.";
+                }
             }
         }
         catch (Exception ex)
         {
             message = $"Błąd: {ex.Message}";
         }
+    }
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        // Zmieniamy kategorię na podstawie wartości wybranej przez użytkownika
+        selectedCategoryId = int.Parse(e.Value.ToString());
+        var selectedCategory = categories.FirstOrDefault(c => c.Id == selectedCategoryId);
+
+        // Jeśli kategoria została wybrana, przypisz jej nazwę
+        if (selectedCategory != null)
+        {
+            selectedCategoryName = selectedCategory.Name;
+            Console.WriteLine($"Wybrana kategoria: {selectedCategoryName}");
+        }
+
+        // Ustawiamy nową kategorię w modelu
+        newContact.CategoryId = selectedCategoryId;
+
+        // Jeśli kategoria to "służbowy", załaduj subkategorie
+        if (selectedCategoryName == "służbowy")
+        {
+            subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(selectedCategoryId);
+            newContact.SubcategoryId = null;
+            newContact.AnotherSubcategory = null;
+        }
+        else
+        {
+            newContact.SubcategoryId = null;
+            newContact.AnotherSubcategory = null;
+        }
+
+        // Zaktualizowanie komponentu po zmianie kategorii
+        StateHasChanged();
     }
 }

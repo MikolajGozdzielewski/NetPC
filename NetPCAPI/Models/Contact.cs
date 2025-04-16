@@ -15,7 +15,8 @@ namespace NetPCAPI.Models
         public DateTime? BirthDate { get; set; }
         public int CategoryId { get; set; }
         public int? SubcategoryId { get; set; }
-        
+        public string? AnotherSubcategory { get; set; }
+
         public Category? Category { get; set; }
         public Subcategory? Subcategory { get; set; }
     }

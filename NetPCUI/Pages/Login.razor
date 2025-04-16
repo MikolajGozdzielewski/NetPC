@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
+@inject AuthService AuthService
 
 <h3>Logowanie</h3>
 
@@ -39,11 +40,9 @@
                 var token = result.Token;
 
                 // Zapisz token do localStorage i ustaw nagłówek
-                await JS.InvokeVoidAsync("localStorage.setItem", "jwtToken", token);
+                await AuthService.LoginAsync(token);
                 Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-                //Navigation.NavigateTo("/");
-                NavigationManager.NavigateTo("/",true);
+                NavigationManager.NavigateTo("/");
 
             }
         }
