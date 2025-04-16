@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Klasa służąca do opisu tabeli Contacts w bazie danych, zawiera ograniczenia i oznaczenie klucza głównego.
+     * </summary>
+    */
     public class Contact
     {
         [Key]
@@ -17,6 +22,7 @@ namespace NetPCAPI.Models
         public int? SubcategoryId { get; set; }
         public string? AnotherSubcategory { get; set; }
 
+        // Dane z relacji, nie są częścią tabeli
         public Category? Category { get; set; }
         public Subcategory? Subcategory { get; set; }
     }

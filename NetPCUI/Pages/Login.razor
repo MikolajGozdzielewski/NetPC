@@ -4,6 +4,9 @@
 @inject IJSRuntime JS
 @inject AuthService AuthService
 
+@* Strona do logowania *@
+@* Wykorzystałem schowek lokalny, pomimo słabych zabezpieczeń z powodu problemów z wykorzystaniem ciasteczek, a przez ograniczoną ilość czasu nie mogłem zagłębić się bardziej w szukanie błędów. *@
+
 <h3>Logowanie</h3>
 
 @if (!string.IsNullOrEmpty(errorMessage))
@@ -22,14 +25,19 @@
     private string password = string.Empty;
     private string errorMessage = string.Empty;
 
+    /*
+    * <summary>
+    * Funkcja służy do pobrania tokenu z backendu, jeśli zalogowanie pójdzie pomyślnie.
+    * </summary>
+    */
     private async Task HandleLogin()
     {
         try
         {
-            // Wysyłanie żądania do API
+            // Wysłanie zapytania
             var response = await Http.PostAsJsonAsync("api/auth/login", new { Email = email, Password = password });
 
-            // Sprawdzenie odpowiedzi
+            
             if (!response.IsSuccessStatusCode)
             {
                 errorMessage = "Nie udało się zalogować. Sprawdź dane logowania.";
@@ -39,7 +47,7 @@
                 var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 var token = result.Token;
 
-                // Zapisz token do localStorage i ustaw nagłówek
+                // Zapisanie tokenu w schowku lokalnym
                 await AuthService.LoginAsync(token);
                 Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 NavigationManager.NavigateTo("/");
@@ -51,7 +59,11 @@
             errorMessage = $"Wystąpił błąd: {ex.Message}";
         }
     }
-
+    /*
+    * <summary>
+    * Klasa służy do przejęcia tokena po zalogowaniu.
+    * </summary>
+    */
     public class TokenResponse
     {
         public string Token { get; set; }

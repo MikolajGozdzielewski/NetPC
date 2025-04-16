@@ -4,6 +4,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using NetPCUI.Models;
 
+/**
+    * <summary>
+    * Serwis zajmuje się obsługą komunikacji z API związanych z klientami.
+    * </summary>
+*/
 public class ContactService
 {
     private readonly HttpClient _http;
@@ -13,11 +18,21 @@ public class ContactService
         _http = http;
     }
 
+    /**
+    * <summary>
+    * Funkcja pobiera z backendu listę kontaktów
+    * </summary>
+*/
     public async Task<List<ContactDto>> GetContactsAsync()
     {
         return await _http.GetFromJsonAsync<List<ContactDto>>("api/Contacts");
     }
 
+    /**
+    * <summary>
+    * Funkcja pobiera z backendu dane konkretnego kontaktu.
+    * </summary>
+*/
     public async Task<ContactDto> GetContactByIdAsync(int id)
     {
         try
@@ -27,15 +42,20 @@ public class ContactService
         }
         catch (Exception ex) 
         {
-            Console.WriteLine($"Błąd podczas pobierania kontaktu: {ex.Message}");
             return null;
         }
     }
 
+    /**
+    * <summary>
+    * Funkcja usuwa wybrany kontakt z bazy.
+    * </summary>
+*/
     public async Task<bool> DeleteContactAsync(int id, string token)
     {
         try
         {
+            // Usunięcie z dodaną autoryzacją
             _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             var response = await _http.DeleteAsync($"api/Contacts/{id}");
             if (response.IsSuccessStatusCode)
@@ -44,21 +64,25 @@ public class ContactService
             }
             else
             {
-                Console.WriteLine($"Nie udało się usunąć kontaktu. Status: {response.StatusCode}");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd podczas usuwania kontaktu: {ex.Message}");
             return false;
         }
     }
 
+    /**
+    * <summary>
+    * Funkcja edytuje wybrany kontakt z bazy.
+    * </summary>
+*/
     public async Task<HttpResponseMessage> UpdateContactAsync(ContactUpdateDto contact, string token)
     {
         try
         {
+            // Edycja z dodaną autoryzacją.
             _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             var response = await _http.PutAsJsonAsync($"api/Contacts/{contact.Id}", contact);
             if (response.IsSuccessStatusCode)
@@ -67,27 +91,31 @@ public class ContactService
             }
             else
             {
-                Console.WriteLine($"Nie udało się zaktualizować kontaktu. Status: {response.StatusCode}");
                 return response;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd przy aktualizacji kontaktu: {ex.Message}");
             return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
         }
     }
 
+    /**
+    * <summary>
+    * Funkcja dodaje kontakt do bazy.
+    * </summary>
+*/
     public async Task<(bool success, string errorMsg, Dictionary<string, List<string>> validationErrors)> AddContactAsync(ContactCreateDto newContact, string token)
     {
         try
         {
+            // Dodanie kontaktu z dodaną autoryzacją
             _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             var response = await _http.PostAsJsonAsync("api/Contacts", newContact);
 
             if (!response.IsSuccessStatusCode)
             {
-                // Zwracamy błędy walidacji w postaci słownika
+                // Pobranie błędu wysłanego z backendu
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     var validationResponse = await response.Content.ReadFromJsonAsync<ValidationErrorResponse>();
@@ -103,7 +131,6 @@ public class ContactService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Błąd przy dodawaniu kontaktu: {ex.Message}");
             return (false, "Wystąpił błąd przy dodawaniu kontaktu.", null);
         }
     }

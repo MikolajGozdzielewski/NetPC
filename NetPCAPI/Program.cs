@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using NetPCAPI.Data;
@@ -8,13 +8,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Dodanie bazy danych SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Dodanie kontrolerów
 builder.Services.AddControllers();
 
+// Dodanie Swaggera, przydatne przy testowaniu
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Dodanie CORS, ogranicza kontakt tylko do domeny localhost:6001
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorPolicy", builder =>
@@ -25,6 +30,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Dodanie Autentykacji z użyciem tokena JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -40,8 +46,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -51,8 +55,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-
 
 app.UseCors("BlazorPolicy");
 

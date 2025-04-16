@@ -1,5 +1,10 @@
 ﻿namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Uproszczona wersja klasy Contact, służy do przesyłu danych do frontendu, nie zawiera hasła.
+     * </summary>
+    */
     public class ContactDto
     {
         public int Id { get; set; }

@@ -1,5 +1,10 @@
 ﻿namespace NetPCUI.Models
 {
+    /**
+     * <summary>
+     * Klasa służy do odbierania danych z tabeli Contacts przez API.
+     * </summary>
+    */
     public class ContactDto
     {
         public int Id { get; set; }

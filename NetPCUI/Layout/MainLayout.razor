@@ -6,7 +6,7 @@
 
 <StatusBar IsLoggedIn="isLoggedIn" OnLogout="HandleLogout" />
 
-
+@* Kod głównego layoutu *@
 <div class="container">
     <header>
         <h1>ContactApp</h1>
@@ -21,24 +21,29 @@
 @code {
     private bool isLoggedIn;
 
+    
     protected override async Task OnInitializedAsync()
     {
+        // Dodanie wywoływania AuthChanged przy zmianie stanu logowania
         AuthService.OnAuthStateChanged += AuthChanged;
         isLoggedIn = await AuthService.IsLoggedInAsync();
     }
 
+    // Zmienia stan zalogowania i odświeża layout.
     private async void AuthChanged()
     {
         isLoggedIn = await AuthService.IsLoggedInAsync();
-        StateHasChanged(); // 🔄 odświeża layout po zmianie
+        StateHasChanged(); 
     }
 
+    // Funkcja do wylogowywania
     private async Task HandleLogout()
     {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/"); 
     }
 
+    // Przy opuszczeniu layoutu, zaprzestaje nasłuchiwania zmianu stanu. W głównym layoucie niepotrzebne.
     public void Dispose()
     {
         AuthService.OnAuthStateChanged -= AuthChanged;

@@ -9,9 +9,11 @@
 @inject IJSRuntime JSRuntime
 @inject IJSRuntime JS
 
+@* Strona wyświetlająca kontakty *@
 
 <h3>Lista kontaktów</h3>
 
+@* Informacje o stanie wczytywania kontaktów, informuje czy pojawił się jakiś błąd *@
 @if (isLoading)
 {
     <p>Ładowanie...</p>
@@ -32,6 +34,7 @@ else
             <div class="contact-item" @onclick="() => ToggleDetails(contact)">
                 <strong>@contact.FirstName @contact.LastName</strong>
 
+                @* Wyświetla dodatkowe informacje dla kontaktu *@
                 @if (expandedContacts.Contains(contact))
                 {
                     <div class="contact-details">
@@ -39,15 +42,18 @@ else
                         <p>Telefon: @contact.PhoneNumber</p>
                         <p>Data urodzenia: @contact.BirthDate</p>
                         <p>Kategoria: @contact.CategoryName</p>
+
+                        @* Wyświetla podkatedorię w zależności czy kontakt taką posiada *@
                         @if (!string.IsNullOrEmpty(contact.SubcategoryName))
                         {
                             <p>Podkategoria: @contact.SubcategoryName</p>
                         }
-
                         @if (!string.IsNullOrEmpty(contact.AnotherSubcategory))
                         {
                             <p>Podkategoria: @contact.AnotherSubcategory</p>
                         }
+
+                        @* Dla niezalogowanego użytkownika, nie pojawią się przyciski do edycji i usuwania *@
                         @if (isLoggedIn)
                         {
                             <button @onclick:stopPropagation="true" @onclick="() => EditContact(contact.Id)">Edytuj</button>
@@ -70,13 +76,23 @@ else
     private bool isLoggedIn;
 
 
-
+    /*
+    * <summary>
+    * Inicjalizacja kontaktów oraz sprawdzenie stanu zalogowania
+    * </summary>
+    */
     protected override async Task OnInitializedAsync()
     {
         await LoadContacts();
         isLoggedIn = await AuthService.IsLoggedInAsync();
     }
 
+
+    /*
+    * <summary>
+    * Funkcja pobiera kontakty z bazy danych przez API
+    * </summary>
+    */
     private async Task LoadContacts()
     {
         isLoading = true;
@@ -89,7 +105,6 @@ else
         catch (Exception ex)
         {
             errorMessage = "Nie udało się pobrać danych z serwera.";
-            Console.WriteLine($"Błąd API: {ex.Message}");
         }
         finally
         {
@@ -97,16 +112,28 @@ else
         }
     }
 
+    /*
+    * <summary>
+    * Funkcja po naciśnięciu przycisku do edycji przenosi na stronę do edycji.
+    * </summary>
+    */
     private void EditContact(int contactId)
     {
         NavigationManager.NavigateTo($"/edit-contact/{contactId}");
     }
 
+    /*
+    * <summary>
+    * Funkcja usuwa kontakt z bazy.
+    * </summary>
+    */
     private async Task DeleteContact(int id)
     {
+        // Wywołanie potwierdzenia usunięcia, żeby nie było możliwości usunięcia kontaktu przez przypadek.
         var confirm = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Czy na pewno chcesz usunąć kontakt?" });
         if (!confirm) return;
 
+        // Pobranie tokenu, który jest potrzebny do usunięcia kontaktu
         var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwtToken");
 
         if (string.IsNullOrEmpty(token))
@@ -117,14 +144,15 @@ else
         bool success = await ContactService.DeleteContactAsync(id,token);
         if (success)
         {
-            contacts.RemoveAll(c => c.Id == id); // odświeżenie widoku
-        }
-        else
-        {
-            Console.WriteLine("Błąd podczas usuwania kontaktu.");
+            contacts.RemoveAll(c => c.Id == id); 
         }
     }
 
+    /*
+    * <summary>
+    * Funkcja służąca do rozwijania i zwijania dodatkowych informacji o kontakcie.
+    * </summary>
+    */
     private void ToggleDetails(ContactDto contact)
     {
         if (expandedContacts.Contains(contact))
@@ -137,12 +165,18 @@ else
         }
     }
 
+    /*
+    * <summary>
+    * Funkcja odświeżająca listę kontaktów.
+    * </summary>
+    */
     private async Task RefreshContacts()
     {
         await LoadContacts();
     }
 }
 
+@* Style służą do lekkiej korekcji wyglądu listy kontaktów, są tutaj, a nie w pliku .razor.css, ponieważ pojawiły się problemy z wczytaniem takiego pliku *@
 <style>
     .contact-item {
         padding: 0.75rem;

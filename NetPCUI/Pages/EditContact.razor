@@ -10,14 +10,16 @@
 
 <h3>Edytowanie kontaktu</h3>
 
+@* Jeśli kontakt nie istnieje, nie pojawi się formularz do edycji. Formularz do edycji różni się od tego do dodawania, że nie ma hasła. *@
 @if (contact == null)
 {
     <p>Ładowanie...</p>
 }
 else{
+    @* Fromularz do edycji kontaktu *@
     <EditForm Model="@contact" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator /> <!-- Walidacja na podstawie atrybutów modelu -->
-        <ValidationSummary /> <!-- Podsumowanie błędów walidacji -->
+        <DataAnnotationsValidator /> @* Dodaje walidacje na podstawie klasy *@
+        <ValidationSummary /> @* Dodaje błędy walidacji *@
 
         <div style="display: flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
             <label>Imię:</label>
@@ -35,7 +37,8 @@ else{
             <label>Data urodzenia:</label>
             <InputDate @bind-Value="contact.BirthDate" />
 
-            <label>Kategoria</label>
+            @* Wyświetlenie kategorii z bazy z tabeli Categories, select zamiast InputSelect, ponieważ pojawiły się problemy przy wyświetlaniu obecnej wartości kategorii. *@
+            @* Różnica między tym, a odpowiednikiem przy dodawaniu jest też @bind zamiast value, powód taki sam jak powyżej. *@
             <select @bind="CategoryId" @bind:event="onchange">
                 <option value="">-- Wybierz kategorię --</option>
                 @foreach (var category in categories)
@@ -44,6 +47,7 @@ else{
                 }
             </select>
 
+            @* Dla wybranej ketegorii "służbowy", ma pojawić się llista rozwijana z podkategoriami, a dla "inny" pojawia się pole tekstowe *@
             @if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "służbowy")
             {
                 <label>Subkategoria:</label>
@@ -65,11 +69,13 @@ else{
         </div>
     </EditForm>
 
+    @* Wyświetlanie błędów o braku tokena. *@
     @if (!string.IsNullOrEmpty(message))
     {
         <p class="text-danger">@message</p>
     }
 
+    @* Wyświetlanie ewentualnych błędów, wcześniej nie wykrytych, jak nieunikalny adres email. Taka forma spowodowana jest problemami przy przesłaniu błędu dla edycji. *@
     @if (validationErrors != null && validationErrors.Any())
     {
         <div class="text-danger">
@@ -93,6 +99,7 @@ else{
     private int selectedCategoryId;
     private Dictionary<string, List<string>> validationErrors;
     private int _categoryId;
+    // Na podstawie tej zmiennej wyświetlane są dane w formularzu dla kategorii.
     private int CategoryId
     {
         get => contact.CategoryId;
@@ -106,26 +113,26 @@ else{
         }
     }
 
+    /*
+    * <summary>
+    * Inicjalizacja kategorii i danych zmienianego kontaktu
+    * </summary>
+    */
     protected override async Task OnInitializedAsync()
     {
         categories = await CategoryService.GetCategoriesAsync();
+        // Pobranie danych o kontakcie z bazy
         try
         {
-            Console.WriteLine("OnInitializedAsync wywołane");
-
-            // Sprawdzamy, czy id jest poprawne
-            Console.WriteLine($"Id kontaktu: {id}");
-
-            // Pobierz kontakt z serwera
             var oldContact = await ContactService.GetContactByIdAsync(id);
 
             if (oldContact == null)
             {
-                Console.WriteLine("Kontakt nie został znaleziony.");
                 Navigation.NavigateTo("/not-found");
             }
             else
             {
+                // Rzutowanie kontaktu z ContactDto na ContactUpdateDto
                 contact = new ContactUpdateDto
                     {
                         Id = id,
@@ -144,9 +151,8 @@ else{
             if (selectedCategory != null)
             {
                 selectedCategoryName = selectedCategory.Name;
-                Console.WriteLine($"Wczytana kategoria: {selectedCategoryName}");
 
-                // Jeśli kategoria to "służbowy", ładujemy subkategorie
+                // jeśli jest kategoria "służbowy" pobieramy z bazy podkategorie
                 if (selectedCategoryName == "służbowy")
                 {
                     subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(contact.CategoryId);
@@ -159,11 +165,17 @@ else{
         }
     }
 
+
+    /*
+    * <summary>
+    * Funkcja wywoływana przy próbie edycji kontaktu.
+    * </summary>
+    */
     private async Task HandleSubmit()
     {
         try
         {
-            // Pobierz token
+            // Pobranie tokenu, sprawdzenie czy użytkownik jest zalogowany
             var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwtToken");
 
             if (string.IsNullOrEmpty(token))
@@ -189,22 +201,30 @@ else{
             message = $"Błąd: {ex.Message}";
         }
     }
+
+    /*
+        * <summary>
+        * Funkcja wywoływana przy zmianie kategorii, pozwala dostosować się polom związanym z podkategorią. 
+        * Podobna do funkcji w pliku AddContact.razor, różnicą są dane wejściowe, w jednym jest argument formularz, 
+        * a tutaj wartość klasa selectedCategoryId, powodem są problemy przy wyświetlanniu startowej wartości 
+        * w formularzu dla kategorii.
+        * </summary>
+        */
     private async Task OnCategoryChanged(int selectedCategoryId)
     {
-        // Zmieniamy kategorię na podstawie wartości wybranej przez użytkownika
+        // Zmiana kategorii na wybraną
         var selectedCategory = categories.FirstOrDefault(c => c.Id == selectedCategoryId);
 
-        // Jeśli kategoria została wybrana, przypisz jej nazwę
+        // Wpisanie nazwy kategorii w formularzu
         if (selectedCategory != null)
         {
             selectedCategoryName = selectedCategory.Name;
-            Console.WriteLine($"Wybrana kategoria: {selectedCategoryName}");
         }
 
-        // Ustawiamy nową kategorię w modelu
+        // Zmiana obiektu
         contact.CategoryId = selectedCategoryId;
 
-        // Jeśli kategoria to "służbowy", załaduj subkategorie
+        // Jeśli kategoria to "służbowy" to ładuje podkategorie dla kategorii "służbowy"
         if (selectedCategoryName == "służbowy")
         {
             subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(selectedCategoryId);
@@ -217,7 +237,6 @@ else{
             contact.AnotherSubcategory = null;
         }
 
-        // Zaktualizowanie komponentu po zmianie kategorii
         StateHasChanged();
     }
 }

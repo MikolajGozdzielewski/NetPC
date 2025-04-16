@@ -1,5 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components
 
+@* Kod menu nawigacji *@
+
 @code {
     [Parameter] public bool IsLoggedIn { get; set; }
     [Parameter] public EventCallback OnLogout { get; set; }
@@ -10,6 +12,7 @@
         <li><a href="/">Strona główna</a></li>
         <li><a href="/contacts">Kontakty</a></li>
         <li><a href="/login">Logowanie</a></li>
+        @* Dodaje zakładkę w zależności od stanu zalogowania *@
         @if (IsLoggedIn)
         {
             <li><a href="/add-contact">Dodaj</a></li>

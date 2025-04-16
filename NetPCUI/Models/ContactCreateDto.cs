@@ -2,6 +2,11 @@
 
 namespace NetPCUI.Models
 {
+    /**
+     * <summary>
+     * Klasa służąca do wysyłania danych do frontendu podczas dodawania kontaktu, posiada ograniczenia, które będą wykorzystane do walidacji.
+     * </summary>
+    */
     public class ContactCreateDto
     {
         [Required(ErrorMessage = "Imię jest wymagane")]
@@ -15,11 +20,12 @@ namespace NetPCUI.Models
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Hasło jest wymagane")]
-        [StringLength(100, MinimumLength = 8, ErrorMessage = "Hasło musi mieć co najmniej 8 znaków")]
+        [MinLength(8, ErrorMessage = "Hasło musi mieć co najmniej 8 znaków.")]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d).+$", ErrorMessage = "Hasło musi zawierać litery i cyfry.")]
         public string Password { get; set; }
 
         [Required(ErrorMessage = "Numer telefonu jest wymagany")]
-        [Phone(ErrorMessage = "Podaj poprawny numer telefonu")]
+        [RegularExpression(@"^\d{9,}$", ErrorMessage = "Numer telefonu musi zawierać co najmniej 9 cyfr.")]
         public string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Data urodzenia jest wymagania")]

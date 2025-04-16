@@ -2,6 +2,12 @@
 
 namespace NetPCUI.Models
 {
+    /**
+     * <summary>
+     * Klasa służąca do wysyłania danych od frontendu podczas edycji kontaktu, posiada ograniczenia, które będą wykorzystane do walidacji.
+     * Różni się od ContactCreateDto, tym że nie ma miejsca na hasło.
+     * </summary>
+    */
     public class ContactUpdateDto
     {
         public int Id { get; set; }
@@ -16,7 +22,7 @@ namespace NetPCUI.Models
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Numer telefonu jest wymagany")]
-        [Phone(ErrorMessage = "Podaj poprawny numer telefonu")]
+        [RegularExpression(@"^\d{9,}$", ErrorMessage = "Numer telefonu musi zawierać co najmniej 9 cyfr.")]
         public string PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Data urodzenia jest wymagania")]

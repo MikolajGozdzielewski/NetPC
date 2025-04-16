@@ -2,6 +2,11 @@
 
 namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Klasa odbierająca dane podczas logowania.
+     * </summary>
+    */
     public class ContactLoginDto
     {
         [Required, EmailAddress]

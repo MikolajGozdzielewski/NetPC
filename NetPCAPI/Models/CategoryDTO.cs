@@ -1,5 +1,10 @@
 ﻿namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Uproszczona wersja klasy Category, służy do przesyłu danych do frontendu.
+     * </summary>
+    */
     public class CategoryDto
     {
         public int Id { get; set; }

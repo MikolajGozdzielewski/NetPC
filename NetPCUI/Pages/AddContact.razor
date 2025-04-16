@@ -8,9 +8,10 @@
 
 <h3>Dodaj kontakt</h3>
 
+@* Fromularz do dodawania kontaktu *@
 <EditForm Model="@newContact" OnValidSubmit="HandleSubmit">
-    <DataAnnotationsValidator /> <!-- Walidacja na podstawie atrybutów modelu -->
-    <ValidationSummary /> <!-- Podsumowanie błędów walidacji -->
+    <DataAnnotationsValidator /> @* Dodaje walidacje na podstawie klasy *@
+    <ValidationSummary /> @* Dodaje błędy walidacji *@
 
     <div style="display: flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
         <label>Imię:</label>
@@ -31,6 +32,7 @@
         <label>Data urodzenia:</label>
         <InputDate @bind-Value="newContact.BirthDate" />
 
+        @* Wyświetlenie kategorii z bazy z tabeli Categories *@
         <label>Kategoria</label>
         <select value="newContact.CategoryId" @onchange="OnCategoryChanged">
             <option value="">-- Wybierz kategorię --</option>
@@ -40,6 +42,7 @@
             }
         </select>
 
+        @* Dla wybranej ketegorii "służbowy", ma pojawić się llista rozwijana z podkategoriami, a dla "inny" pojawia się pole tekstowe *@
         @if (!string.IsNullOrEmpty(selectedCategoryName) && selectedCategoryName == "służbowy")
         {
             <label>Subkategoria:</label>
@@ -61,6 +64,7 @@
     </div>
 </EditForm>
 
+@* Wyświetlanie ewentualnych błędów, wcześniej nie wykrytych, jak nieunikalny adres email. *@
 @if (!string.IsNullOrEmpty(message))
 {
     <p class="text-danger">@message</p>
@@ -74,16 +78,26 @@
     private string message = "";
     private int selectedCategoryId;
 
+    /*
+    * <summary>
+    * Inicjalizacja kategorii
+    * </summary>
+    */
     protected override async Task OnInitializedAsync()
     {
         categories = await CategoryService.GetCategoriesAsync();
     }
 
+    /*
+    * <summary>
+    * Funkcja wywoływana przy próbie dodania kontaktu
+    * </summary>
+    */
     private async Task HandleSubmit()
     {
         try
         {
-            // Pobierz token
+            // Pobranie tokenu, sprawdzenie czy użytkownik jest zalogowany
             var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwtToken");
 
             if (string.IsNullOrEmpty(token))
@@ -94,6 +108,7 @@
 
             var (success, errorMsg, validationErrors) = await ContactService.AddContactAsync(newContact, token);
 
+
             if (success)
             {
                 Navigation.NavigateTo("/");
@@ -102,7 +117,6 @@
             {
                 if (validationErrors != null && validationErrors.Any())
                 {
-                    // Obsługuje błędy walidacji, które są zwracane przez serwer
                     foreach (var error in validationErrors)
                     {
                         message += $"{error.Key}: {string.Join(", ", error.Value)}\n";
@@ -120,23 +134,27 @@
         }
     }
 
+    /*
+    * <summary>
+    * Funkcja wywoływana przy zmianie kategorii, pozwala dostosować się polom związanym z podkategorią
+    * </summary>
+    */
     private async Task OnCategoryChanged(ChangeEventArgs e)
     {
-        // Zmieniamy kategorię na podstawie wartości wybranej przez użytkownika
+        // Zmiana kategorii na wybraną
         selectedCategoryId = int.Parse(e.Value.ToString());
         var selectedCategory = categories.FirstOrDefault(c => c.Id == selectedCategoryId);
 
-        // Jeśli kategoria została wybrana, przypisz jej nazwę
+        // Wpisanie nazwy kategorii w formularzu
         if (selectedCategory != null)
         {
             selectedCategoryName = selectedCategory.Name;
-            Console.WriteLine($"Wybrana kategoria: {selectedCategoryName}");
         }
 
-        // Ustawiamy nową kategorię w modelu
+        // Zmiana obiektu
         newContact.CategoryId = selectedCategoryId;
 
-        // Jeśli kategoria to "służbowy", załaduj subkategorie
+        // Jeśli kategoria to "służbowy" to ładuje podkategorie dla kategorii "służbowy"
         if (selectedCategoryName == "służbowy")
         {
             subcategories = await CategoryService.GetSubcategoriesByCategoryIdAsync(selectedCategoryId);
@@ -149,7 +167,6 @@
             newContact.AnotherSubcategory = null;
         }
 
-        // Zaktualizowanie komponentu po zmianie kategorii
         StateHasChanged();
     }
 }

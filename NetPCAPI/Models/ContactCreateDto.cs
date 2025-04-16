@@ -2,6 +2,11 @@
 
 namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Wersja klasy Contact, służąca do odebrania danych od frontendu podczas dodawania nowego kontaktu, posiada ograniczenia, które będą wykorzystane do walidacji po stronie backendu.
+     * </summary>
+    */
     public class ContactCreateDto
     {
         [Required]

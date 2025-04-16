@@ -2,6 +2,12 @@
 
 namespace NetPCAPI.Models
 {
+    /**
+     * <summary>
+     * Wersja klasy Contact, służąca do odebrania danych od frontendu podczas edycji kontaktu, posiada ograniczenia, które będą wykorzystane do walidacji po stronie backendu.
+     * Różni się od ContactCreateDto, tym że nie ma miejsca na hasło.
+     * </summary>
+    */
     public class ContactUpdateDto
     {
         public string FirstName { get; set; }
